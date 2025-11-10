@@ -80,9 +80,11 @@ struct CreditsView: View {
                     // Content
                     ScrollView {
                         if selectedTab == 0 {
-                            SubscriptionPlansView(purchaseManager: purchaseManager, isPurchasing: $isPurchasing)
+                            SubscriptionPlansView(purchaseManager: purchaseManager, isPurchasing: $isPurchasing, showError: $showError, errorMessage: $errorMessage)
+                                .environmentObject(authService)
                         } else {
-                            CreditPackagesView(purchaseManager: purchaseManager, isPurchasing: $isPurchasing)
+                            CreditPackagesView(purchaseManager: purchaseManager, isPurchasing: $isPurchasing, showError: $showError, errorMessage: $errorMessage)
+                                .environmentObject(authService)
                         }
                     }
                 }
@@ -118,8 +120,11 @@ struct CreditsView: View {
 }
 
 struct SubscriptionPlansView: View {
+    @EnvironmentObject var authService: AuthenticationService
     @ObservedObject var purchaseManager: PurchaseManager
     @Binding var isPurchasing: Bool
+    @Binding var showError: Bool
+    @Binding var errorMessage: String
 
     var body: some View {
         VStack(spacing: 20) {
@@ -145,6 +150,8 @@ struct SubscriptionPlansView: View {
 
     private func purchase(plan: SubscriptionPlan) {
         guard let product = purchaseManager.availableProducts.first(where: { $0.id == plan.productIdentifier }) else {
+            errorMessage = "This subscription package is not available. Please try again later or contact support."
+            showError = true
             return
         }
 
@@ -153,9 +160,13 @@ struct SubscriptionPlansView: View {
         Task {
             do {
                 try await purchaseManager.purchase(product)
+                // Reload user data to refresh credits and subscription status
+                await authService.loadCurrentUser()
                 isPurchasing = false
             } catch {
                 isPurchasing = false
+                errorMessage = error.localizedDescription
+                showError = true
                 print("Purchase failed: \(error)")
             }
         }
@@ -258,8 +269,11 @@ struct SubscriptionPlanCard: View {
 }
 
 struct CreditPackagesView: View {
+    @EnvironmentObject var authService: AuthenticationService
     @ObservedObject var purchaseManager: PurchaseManager
     @Binding var isPurchasing: Bool
+    @Binding var showError: Bool
+    @Binding var errorMessage: String
 
     var body: some View {
         VStack(spacing: 20) {
@@ -285,6 +299,8 @@ struct CreditPackagesView: View {
 
     private func purchase(package: CreditPackage) {
         guard let product = purchaseManager.availableProducts.first(where: { $0.id == package.productIdentifier }) else {
+            errorMessage = "This credit package is not available. Please try again later or contact support."
+            showError = true
             return
         }
 
@@ -293,9 +309,13 @@ struct CreditPackagesView: View {
         Task {
             do {
                 try await purchaseManager.purchase(product)
+                // Reload user data to refresh credits
+                await authService.loadCurrentUser()
                 isPurchasing = false
             } catch {
                 isPurchasing = false
+                errorMessage = error.localizedDescription
+                showError = true
                 print("Purchase failed: \(error)")
             }
         }

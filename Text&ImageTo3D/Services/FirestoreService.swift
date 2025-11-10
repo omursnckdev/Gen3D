@@ -81,6 +81,12 @@ class FirestoreService {
         try await usersCollection.document(userId).updateData(data)
     }
 
+    func updateOnboardingStatus(userId: String, completed: Bool) async throws {
+        try await usersCollection.document(userId).updateData([
+            "hasCompletedOnboarding": completed
+        ])
+    }
+
     func deleteUser(userId: String) async throws {
         // Delete all user's generations
         let generations = try await getUserGenerations(userId: userId)
