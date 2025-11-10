@@ -13,7 +13,7 @@ export const meshyTextTo3D = onRequest(
         return res.status(405).send("Use POST");
       }
 
-      const { mode } = req.body;
+      const { mode, ...bodyWithoutMode } = req.body;
 
       // Determine the correct endpoint based on mode
       let endpoint;
@@ -25,13 +25,14 @@ export const meshyTextTo3D = onRequest(
         return res.status(400).json({ error: "Invalid mode. Use 'preview' or 'refine'" });
       }
 
+      // Forward request to Meshy API without the 'mode' parameter
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${MESHY_API_KEY.value()}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(req.body),
+        body: JSON.stringify(bodyWithoutMode),
       });
 
       const data = await response.json();
