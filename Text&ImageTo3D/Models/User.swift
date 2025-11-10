@@ -18,6 +18,7 @@ struct AppUser: Codable, Identifiable {
     var subscriptionEndDate: Date?
     var createdAt: Date
     var lastLoginAt: Date
+    var hasCompletedOnboarding: Bool
 
     enum CodingKeys: String, CodingKey {
         // Removed 'id' - @DocumentID handles it automatically
@@ -29,6 +30,7 @@ struct AppUser: Codable, Identifiable {
         case subscriptionEndDate
         case createdAt
         case lastLoginAt
+        case hasCompletedOnboarding
     }
 
     init(
@@ -40,7 +42,8 @@ struct AppUser: Codable, Identifiable {
         subscriptionType: SubscriptionType = .free,
         subscriptionEndDate: Date? = nil,
         createdAt: Date = Date(),
-        lastLoginAt: Date = Date()
+        lastLoginAt: Date = Date(),
+        hasCompletedOnboarding: Bool = false
     ) {
         // Don't set self.id - @DocumentID manages it
         // self.id = id  // Remove this line
@@ -52,6 +55,7 @@ struct AppUser: Codable, Identifiable {
         self.subscriptionEndDate = subscriptionEndDate
         self.createdAt = createdAt
         self.lastLoginAt = lastLoginAt
+        self.hasCompletedOnboarding = hasCompletedOnboarding
     }
 }
 
